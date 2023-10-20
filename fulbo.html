@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=Outfit:wght@500;600&family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <title>Partidos de Fútbol</title>
+    <link rel="stylesheet" href="css/style_fulbo.css">
+</head>
+<body>
+    <div class="contenedor">
+        <div class="columna-izquierda">
+            <div class="logo-liga"></div>
+            <!-- Contenido de la columna izquierda (1/3 del ancho) -->
+            <ul class="lista-partidos">
+                <!-- Iterar a través de los partidos para crear filas -->
+            </ul>
+        </div>
+        <div class="columna-derecha">
+            <!-- Contenido de la columna derecha (2/3 del ancho) -->
+            
+            <!-- Repetir esta estructura para más partidos -->
+        </div>
+    </div>
+    <script>
+
+fetch("https://v3.football.api-sports.io/fixtures/rounds?season=2023&league=1032&current=true", {
+        "method": "GET",
+        "headers": {
+            "x-rapidapi-host": "v3.football.api-sports.io",
+            "x-rapidapi-key": "a602d2eab75e1567d73a14980d734e31"
+        }
+        })
+        .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('No se pudo obtener la respuesta.');
+        }
+        })
+        .then(data => {
+        const round = data.response[0]; // Obtiene el "round" actual
+        console.log(`Round actual: ${round}`);
+
+        // Haces una segunda solicitud para obtener los partidos del "round" actual
+        fetch(`https://v3.football.api-sports.io/fixtures?season=2023&league=1032&round=${round}&timezone=America/Argentina/Buenos_Aires`, {
+            "method": "GET",
+            "headers": {
+            "x-rapidapi-host": "v3.football.api-sports.io",
+            "x-rapidapi-key": "a602d2eab75e1567d73a14980d734e31"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+            return response.json();
+            } else {
+            throw new Error('No se pudo obtener la respuesta.');
+            }
+        })
+        .then(data => {
+            console.log(data);
+        // Aquí agregamos el código para procesar los datos de los partidos
+        const partidos = data.response; // Todos los partidos del "round"
+            
+        // Crear un array para almacenar los partidos
+        const partidosArray = [];
+            
+        // Iterar a través de los partidos y agregarlos al array
+        partidos.forEach(partido => {
+            var logoLiga = partido.league.logo;
+            var nombreEquipoLocal = partido.teams.home.name;
+            var logoEquipoLocal = partido.teams.home.logo;
+            var nombreEquipoVisitante = partido.teams.away.name;
+            var logoEquipoVisitante = partido.teams.away.logo;
+            var golesEquipoLocal = partido.goals.home;
+            var golesEquipoVisitante = partido.goals.away;
+
+            // Obtener el valor completo de fecha y horario
+            var fechaHorarioCompleto = partido.fixture.date;
+
+            // Separar fecha y horario utilizando la letra "T" como separador
+            var fechaHorarioSeparado = fechaHorarioCompleto.split('T');
+            var fechaPartido = fechaHorarioSeparado[0]; // La fecha es la primera parte
+            var horarioCompleto = fechaHorarioSeparado[1]; // El horario completo es la segunda parte
+
+            // Separar el horario para eliminar la información después del guión ("-")
+            var horarioSeparado = horarioCompleto.split('-');
+            var horarioPartido = horarioSeparado[0]; // El horario es la primera parte
+
+            // Crear un objeto para representar el partido
+            var partidoObjeto = {
+            logoLiga: logoLiga,
+            nombreEquipoLocal: nombreEquipoLocal,
+            logoEquipoLocal: logoEquipoLocal,
+            nombreEquipoVisitante: nombreEquipoVisitante,
+            logoEquipoVisitante: logoEquipoVisitante,
+            golesEquipoLocal: golesEquipoLocal,
+            golesEquipoVisitante: golesEquipoVisitante,
+            fechaPartido: fechaPartido,
+            horarioPartido: horarioPartido
+            };
+
+            // Agregar el objeto del partido al array
+            partidosArray.push(partidoObjeto);
+        });
+            
+        // Ordenar los partidos de forma ascendente por fecha y horario
+        partidosArray.sort((a, b) => {
+        // Concatenar fecha y horario para convertirlos en un valor comparable
+        var fechaHoraA = a.fechaPartido + a.horarioPartido;
+        var fechaHoraB = b.fechaPartido + b.horarioPartido;
+        
+        // Comparar las fechas y horarios en orden ascendente
+        if (fechaHoraA < fechaHoraB) return -1; // Orden ascendente
+        if (fechaHoraA > fechaHoraB) return 1;
+        return 0;
+        });
+
+        // Ahora tienes los partidos ordenados de forma ascendente en partidosArray
+        console.log(partidosArray);
+
+        // Supongamos que tienes un array de partidos llamado "partidosArray" con los datos de los partidos
+        // Debes tener este array lleno con los datos adecuados
+
+        // Obtén la referencia al elemento <ul> donde se mostrarán los partidos en la columna izquierda
+        const listaPartidos = document.querySelector(".lista-partidos");
+
+        // Variable para mantener la fecha del partido anterior en la columna izquierda
+        let fechaAnterior = null;
+
+        // Recorre el array de partidos y crea las filas dinámicamente en la columna izquierda
+        partidosArray.forEach(partido => {
+            // Crea un elemento <li> para la fila del partido en la columna izquierda
+            const filaPartido = document.createElement("li");
+            filaPartido.classList.add("fila-partido");
+
+            // Obtén la fecha del partido actual en la columna izquierda
+            const fechaActual = partido.fechaPartido;
+
+            // Comprueba si la fecha actual es diferente a la fecha anterior en la columna izquierda
+            if (fechaActual !== fechaAnterior) {
+                // Agrega un encabezado con la nueva fecha en la columna izquierda
+                const separadorFecha = document.createElement("div");
+                separadorFecha.classList.add("separador-fecha");
+                separadorFecha.textContent = fechaActual;
+                listaPartidos.appendChild(separadorFecha);
+
+                // Actualiza la fecha anterior en la columna izquierda
+                fechaAnterior = fechaActual;
+            }
+
+            // Crea la división para el equipo local en la columna izquierda
+            const equipoLocal = document.createElement("div");
+            equipoLocal.classList.add("equipo-local");
+            const logoLocal = document.createElement("img");
+            logoLocal.src = partido.logoEquipoLocal; // Reemplaza con la URL del logo
+            logoLocal.alt = "Logo Equipo Local";
+            const nombreLocal = document.createElement("span");
+            nombreLocal.textContent = partido.nombreEquipoLocal;
+            
+            // Crea la división para los goles del equipo local en la columna izquierda
+            const golesLocal = document.createElement("span");
+            golesLocal.classList.add("goles-local");
+            golesLocal.textContent = partido.golesEquipoLocal;
+
+            // Agrega el logo y el nombre al equipo local en la columna izquierda
+            equipoLocal.appendChild(logoLocal);
+            equipoLocal.appendChild(nombreLocal);
+            
+            // Agrega los goles del equipo local al equipo local en la columna izquierda
+            equipoLocal.appendChild(golesLocal);
+
+            // Crea la división para el equipo visitante en la columna izquierda
+            const equipoVisitante = document.createElement("div");
+            equipoVisitante.classList.add("equipo-visitante");
+            const logoVisitante = document.createElement("img");
+            logoVisitante.src = partido.logoEquipoVisitante; // Reemplaza con la URL del logo
+            logoVisitante.alt = "Logo Equipo Visitante";
+            const nombreVisitante = document.createElement("span");
+            nombreVisitante.textContent = partido.nombreEquipoVisitante;
+
+            // Crea la división para los goles del equipo visitante en la columna izquierda
+            const golesVisitante = document.createElement("span");
+            golesVisitante.classList.add("goles-visitante");
+            golesVisitante.textContent = partido.golesEquipoVisitante;
+
+            // Agrega el logo y el nombre al equipo visitante en la columna izquierda
+            equipoVisitante.appendChild(logoVisitante);
+            equipoVisitante.appendChild(nombreVisitante);
+            
+            // Agrega los goles del equipo visitante al equipo visitante en la columna izquierda
+            equipoVisitante.appendChild(golesVisitante);
+
+            // Agrega las divisiones de equipo al elemento <li> del partido en la columna izquierda
+            filaPartido.appendChild(equipoLocal);
+            filaPartido.appendChild(equipoVisitante);
+
+            // Agrega la fila del partido a la lista de partidos en la columna izquierda
+            listaPartidos.appendChild(filaPartido);
+        });
+
+        // Obtén la referencia a la columna derecha donde se mostrarán los partidos
+        const columnaDerecha = document.querySelector(".columna-derecha");
+
+        // Variable para mantener el índice del partido actual en la columna derecha
+        let currentIndex = 0;
+
+        // Función para mostrar los partidos en la columna derecha
+        function mostrarPartidos() {
+          // Limpia la columna derecha
+          columnaDerecha.innerHTML = "";
+
+          // Muestra dos partidos en la columna derecha
+          for (let i = 0; i < 2; i++) {
+            // Obtiene el partido actual
+            const partido = partidosArray[currentIndex];
+
+            // Crea un div para el partido en la columna derecha
+            const divPartido = document.createElement("div");
+            divPartido.classList.add("partido-derecha");
+
+            // Crea la fila superior para el equipo local en la columna derecha
+            const filaSuperiorLocal = document.createElement("div");
+            filaSuperiorLocal.classList.add("equipo-local-der");
+            const logoLocalSuperior = document.createElement("img");
+            logoLocalSuperior.src = partido.logoEquipoLocal;
+            logoLocalSuperior.alt = "Logo Equipo Local";
+            const nombreLocalSuperior = document.createElement("span");
+            nombreLocalSuperior.textContent = partido.nombreEquipoLocal;
+            filaSuperiorLocal.appendChild(logoLocalSuperior);
+            filaSuperiorLocal.appendChild(nombreLocalSuperior);
+
+            // Crea la fila superior para los goles y tiempo en la columna derecha
+            const filaSuperiorGoles = document.createElement("div");
+            filaSuperiorGoles.classList.add("goles-tiempo");
+            filaSuperiorGoles.textContent = `${partido.golesEquipoLocal} - ${partido.golesEquipoVisitante}`;
+
+            // Crea la fila superior para el equipo visitante en la columna derecha
+            const filaSuperiorVisitante = document.createElement("div");
+            filaSuperiorVisitante.classList.add("equipo-visitante-der");
+            const logoVisitanteSuperior = document.createElement("img");
+            logoVisitanteSuperior.src = partido.logoEquipoVisitante;
+            logoVisitanteSuperior.alt = "Logo Equipo Visitante";
+            const nombreVisitanteSuperior = document.createElement("span");
+            nombreVisitanteSuperior.textContent = partido.nombreEquipoVisitante;
+            filaSuperiorVisitante.appendChild(logoVisitanteSuperior);
+            filaSuperiorVisitante.appendChild(nombreVisitanteSuperior);
+
+            // Agrega las filas superiores al partido en la columna derecha
+            divPartido.appendChild(filaSuperiorLocal);
+            divPartido.appendChild(filaSuperiorGoles);
+            divPartido.appendChild(filaSuperiorVisitante);
+            // Agrega el partido a la columna derecha
+            columnaDerecha.appendChild(divPartido);
+
+            // Incrementa el índice del partido actual
+            currentIndex++;
+
+            // Si llegamos al final de la lista de partidos, volvemos al principio
+            if (currentIndex === partidosArray.length) {
+              currentIndex = 0;
+            }
+          }
+        }
+
+        // Muestra los partidos iniciales
+        mostrarPartidos();
+
+        // Cambia los partidos cada 5 segundos
+        setInterval(mostrarPartidos, 5000);
+
+        const logo_Liga = document.createElement("img");
+        logo_Liga.src = partidosArray[0].logoLiga;
+        const conteinerLogo = document.querySelector(".logo-liga");
+        conteinerLogo.appendChild(logo_Liga);
+
+        })
+        .catch(error => {
+        console.error('Error al obtener los datos de los partidos:', error);
+        });
+
+        })
+        .catch(error => {
+        console.error('Error al obtener el round actual:', error);
+        });
+
+        // Obtén la referencia a la lista de partidos
+        const listaPartidos = document.querySelector(".lista-partidos");
+
+        // Variable para mantener la dirección del desplazamiento
+        let scrollDirection = 1; // 1: hacia abajo, -1: hacia arriba
+
+        // Configura el intervalo para llamar a la función de desplazamiento automáticamente
+        setInterval(scrollLista, 100); // Cambia 50 a la velocidad que desees
+
+        function scrollLista() {
+            // Si la lista ha llegado al final, invierte la dirección del desplazamiento
+            if (
+                listaPartidos.scrollTop === listaPartidos.scrollHeight - listaPartidos.clientHeight ||
+                listaPartidos.scrollTop === 0
+            ) {
+                scrollDirection *= -1;
+            }
+
+            // Desplaza la lista en la dirección actual
+            listaPartidos.scrollTop += 1 * scrollDirection; // Puedes ajustar la velocidad cambiando el valor aquí
+        }
+
+    </script>
+</body>
+</html>

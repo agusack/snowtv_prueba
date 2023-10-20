@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@2.1.0/build/global/luxon.min.js"></script>
+    <style>
+        /* Estilos para la tabla */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Estilos para las imágenes de los logotipos */
+        img {
+            max-width: 30px;
+            max-height: 30px;
+        }
+
+        /* Estilos para el contenedor de los logotipos */
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="tabla-partidos">
+        <!-- La tabla se mostrará aquí -->
+    </div>
+
+    <!-- Tu código de pie de página aquí -->
+
+    <script>
+
+    fetch("https://v3.football.api-sports.io/fixtures/rounds?season=2023&league=1032&current=true", {
+            "method": "GET",
+            "headers": {
+                "x-rapidapi-host": "v3.football.api-sports.io",
+                "x-rapidapi-key": "a602d2eab75e1567d73a14980d734e31"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('No se pudo obtener la respuesta.');
+            }
+        })
+        .then(data => {
+            const round = data.response[0]; // Obtiene el "round" actual
+            console.log(`Round actual: ${round}`);
+
+            // Haces una segunda solicitud para obtener los partidos del "round" actual
+            fetch(`https://v3.football.api-sports.io/fixtures?season=2023&league=1032&round=${round}&timezone=America/Argentina/Buenos_Aires`, {
+                "method": "GET",
+                "headers": {
+                    "x-rapidapi-host": "v3.football.api-sports.io",
+                    "x-rapidapi-key": "a602d2eab75e1567d73a14980d734e31"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('No se pudo obtener la respuesta.');
+                }
+            })
+            .then(data => {
+                console.log(data);
+                // Filtras la información que necesitas de la respuesta
+                const partidos = data.response.map(partido => {
+                    return {
+                        equipos: `${partido.teams.home.name} vs ${partido.teams.away.name}`,
+                        logosEquipos: [partido.teams.home.logo, partido.teams.away.logo],
+                        horaInicio: new Date(partido.fixture.date), // Convertir la fecha a un objeto Date
+                        minutosJugados: partido.fixture.status.elapsed,
+                        goles: `${partido.goals.home} - ${partido.goals.away}`
+                    };
+                });
+
+                // Ordenar los partidos en orden descendente por fecha y hora de inicio
+                partidos.sort((a, b) => a.horaInicio - b.horaInicio);
+
+                // Crear un objeto para agrupar los partidos por día
+                const partidosPorDia = {};
+
+                // Agrupar los partidos por día
+                partidos.forEach(partido => {
+                    // Obtener la fecha en formato YYYY-MM-DD
+                    const fecha = partido.horaInicio.toISOString().split('T')[0];
+
+                    // Si la fecha no existe en el objeto, crear un arreglo vacío para ese día
+                    if (!partidosPorDia[fecha]) {
+                        partidosPorDia[fecha] = [];
+                    }
+
+                    // Agregar el partido al arreglo correspondiente al día
+                    partidosPorDia[fecha].push(partido);
+                });
+
+                // Ahora, tienes los partidos agrupados por día en el objeto partidosPorDia
+                console.log(partidosPorDia);
+
+                // Aquí puedes recorrer el objeto y mostrar los partidos por día en tu página HTML
+                for (const fecha in partidosPorDia) {
+                    if (partidosPorDia.hasOwnProperty(fecha)) {
+                        const partidosDelDia = partidosPorDia[fecha];
+                        // Crea una división o sección para mostrar los partidos de este día en tu HTML
+                        // Puedes usar fecha como encabezado si lo deseas
+                        console.log(`Partidos del dia ${fecha}`);
+                        console.log(partidosDelDia);
+                    }
+                }
+
+                // Crear la tabla HTML
+                const tablaPartidosElement = document.getElementById("tabla-partidos");
+                const tabla = document.createElement("table");
+
+                // Crea el encabezado de la tabla
+                const encabezado = tabla.createTHead();
+                const filaEncabezado = encabezado.insertRow();
+                for (const campo in partidos[0]) {
+                    const th = document.createElement("th");
+                    th.textContent = campo;
+                    filaEncabezado.appendChild(th);
+                }
+
+                // Crea las filas de datos
+                const cuerpoTabla = tabla.createTBody();
+                partidos.forEach(partido => {
+                    const fila = cuerpoTabla.insertRow();
+                    for (const campo in partido) {
+                        const celda = fila.insertCell();
+                        if (campo === "logosEquipos") {
+                            const logos = partido[campo];
+                            const divLogos = document.createElement("div");
+                            logos.forEach(logoUrl => {
+                                const img = document.createElement("img");
+                                img.src = logoUrl;
+                                divLogos.appendChild(img);
+                            });
+                            celda.appendChild(divLogos);
+                        } else {
+                            celda.textContent = partido[campo];
+                        }
+                    }
+                });
+
+                // Agrega la tabla al div "tabla-partidos"
+                tablaPartidosElement.appendChild(tabla);
+            })
+            .catch(err => {
+                console.log(err);
+            });
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    </script>
+</body>
+</html>        

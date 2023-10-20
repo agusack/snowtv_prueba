@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prueba/framework/SnowTV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Darumadrop+One&family=Roboto:wght@500&display=swap" rel="stylesheet">
+    <link href="node_modules/video.js/dist/video-js.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="node_modules/video.js/dist/video.min.js"></script>
+</head>
+<body>
+    <div id="logo"><img src="img/snow.png" alt=""></div>
+    <div id="hora"></div>
+    <!-- Capa de superposición para la transición -->
+    <div id="transicion-overlay"></div>
+    <div id="conteiner-video">
+        <video id="tv-player" class="video-js vjs-default-skin" muted>
+        </video>
+    </div>
+</body>
+<script src="js/reproductor.js"></script>
+<script src="js/hora.js"></script>
+</html>

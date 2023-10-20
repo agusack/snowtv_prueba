@@ -1,0 +1,32 @@
+<!-- standings.html -->
+<div id="wg-api-football-games"
+    data-host="v3.football.api-sports.io"
+    data-key="a602d2eab75e1567d73a14980d734e31"
+    data-date="2023-08-28"
+    data-league=""
+    data-season=""
+    data-theme="false"
+    data-refresh=""
+    data-show-toolbar="false"
+    data-show-errors="false"
+    data-show-logos="true"
+    data-modal-game="true"
+    data-modal-standings="false"
+    data-modal-show-logos="true">
+</div>
+
+<script src="scripts.js"></script>
+
+<script>
+    let standings = document.getElementById('wg-api-football-games')
+    let league = get_parameter('league')
+    let season = get_parameter('season')
+    standings.setAttribute('data-league', league)
+    standings.setAttribute('data-season', season)
+</script>
+
+<script
+    type="module"
+    src="https://widgets.api-sports.io/2.0.3/widgets.js">
+</script>
+<link rel="stylesheet" href="css/widgets.css">
